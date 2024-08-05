@@ -1,20 +1,26 @@
-
 const url = "https://static.bc-edx.com/data/dl-1-2/m14/lms/starter/samples.json";
 
+const optionChanged = option => {
 
-const optionChanged = async option => {
-
-  data = await d3.json(url);
-
-// Populating options in select element if option variable is undefined
+  // Populating options in select element if option variable is undefined
   if (option == undefined) {
-    data.names.forEach(name => {
-      d3.select('#selDataset').append('option').text(name);
+
+    d3.json(url).then(({ names }) => {
+      option = names[0];
+
+      names.forEach(name => {
+        d3.select('#selDataset').append('option').text(name);
+      });
     });
+  };
+
+  d3.json(url).then(({ metadata, samples }) => {
 
     const renderCharts = (option) => {
-      let meta = data.metadata.find(obj => obj.id == option);
-      let { otu_ids, sample_values, otu_labels } = data.samples.find(obj => obj.id == option);
+
+      // Data filtering based on selection
+      let meta = metadata.find(obj => obj.id == option);
+      let { otu_ids, sample_values, otu_labels } = samples.find(obj => obj.id == option);
 
       // Demographic Info
       d3.select('#sample-metadata').html('');
@@ -54,21 +60,17 @@ const optionChanged = async option => {
 
       layout = {
         title: 'Bacteria Cultures Per Sample',
-        xaxis: {title: 'OTU ID'},
-        yaxis: {title: 'Number of Bacteria'}
+        xaxis: { title: 'OTU ID' },
+        yaxis: { title: 'Number of Bacteria' }
       }
-      
+
       var bubble_data = [trace1];
-      
-      Plotly.newPlot('bubble', bubble_data, layout);      
+
+      Plotly.newPlot('bubble', bubble_data, layout);
     };
 
-
-    renderCharts(data.names[0])
-  };
-
-
-
-}
+    renderCharts(option);
+  });
+};
 
 optionChanged();
